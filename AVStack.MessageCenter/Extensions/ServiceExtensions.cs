@@ -8,6 +8,7 @@ using AVStack.MessageCenter.Services.Interfaces;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using RabbitMQ.Client;
+using IdentityEmailService = AVStack.MessageCenter.Services.IdentityEmailService;
 
 namespace AVStack.MessageCenter.Extensions
 {
@@ -20,14 +21,17 @@ namespace AVStack.MessageCenter.Extensions
             services.ConfigureOptions(configuration);
             services.ConfigureRabbitMq(configuration);
 
-            services.AddTransient<IEmailService, EmailService>();
+            services.AddAutoMapper(typeof(Startup));
 
+            services.AddScoped<IIdentityEmailService, IdentityEmailService>();
+            services.AddTransient<IEmailServiceFactory, EmailServiceFactory>();
             services.ConfigureHosts();
         }
 
         private static void ConfigureOptions(this IServiceCollection services, IConfiguration configuration)
         {
-            services.Configure<EmailOptions>(configuration.GetSection(EmailOptions.EmailOptionsSection));
+            services.Configure<EmailConfigurationOptions>(configuration.GetSection(EmailConfigurationOptions.EmailConfigurationSection));
+            services.Configure<EmailTemplatesOptions>(configuration.GetSection(EmailTemplatesOptions.EmailTemplatesSection));
         }
 
         private static void ConfigureHosts(this IServiceCollection services)

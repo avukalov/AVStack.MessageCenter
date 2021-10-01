@@ -1,8 +1,8 @@
 namespace AVStack.MessageCenter.Common.Configuration
 {
-    public class EmailOptions
+    public class EmailConfigurationOptions
     {
-        public const string EmailOptionsSection = "EmailConfiguration";
+        public const string EmailConfigurationSection = "EmailConfiguration";
 
         public string SmtpServer { get; set; }
 
