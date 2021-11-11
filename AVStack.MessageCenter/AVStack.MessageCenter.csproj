@@ -3,6 +3,9 @@
     <PropertyGroup>
         <TargetFramework>net5.0</TargetFramework>
         <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
+        <IsPackable>true</IsPackable>
+        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+        <AssemblyVersion>1.0.0</AssemblyVersion>
     </PropertyGroup>
 
     <ItemGroup>
@@ -15,10 +18,6 @@
       <ProjectReference Include="..\..\AVStack.IdentityServer\AVStack.IdentityServer.Common\AVStack.IdentityServer.Common.csproj" />
       <ProjectReference Include="..\..\AVStack.MessageBus\AVStack.MessageBus.Extensions\AVStack.MessageBus.Extensions.csproj" />
       <ProjectReference Include="..\AVStack.MessageCenter.Common\AVStack.MessageCenter.Common.csproj" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <Folder Include="Controllers" />
     </ItemGroup>
 
 </Project>
