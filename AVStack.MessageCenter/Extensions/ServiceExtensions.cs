@@ -1,7 +1,11 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
 using AVStack.MessageBus.Abstraction;
 using AVStack.MessageBus.Extensions;
 using AVStack.MessageCenter.Common.Configuration;
+using AVStack.MessageCenter.Handlers;
 using AVStack.MessageCenter.Hosts;
 using AVStack.MessageCenter.Services;
 using AVStack.MessageCenter.Services.Interfaces;
@@ -15,44 +19,68 @@ namespace AVStack.MessageCenter.Extensions
     {
         public static void ConfigureServices(this IServiceCollection services, IConfiguration configuration)
         {
-            services.AddControllers();
+            //services.AddControllers();
             //services.AddAuthorization();
-            services.ConfigureOptions(configuration);
-            services.ConfigureRabbitMq(configuration);
 
+            services.AddRabbitMq(configuration);
+            services.AddAutoMapper(typeof(Startup));
+
+            services.RegisterOptions(configuration);
+            services.RegisterServices();
+            services.RegisterHosts();
+        }
+
+        private static void RegisterOptions(this IServiceCollection services, IConfiguration configuration)
+        {
+            services.Configure<EmailConfigurationOptions>(configuration.GetSection(EmailConfigurationOptions.EmailConfigurationSection));
+            services.Configure<EmailTemplatesOptions>(configuration.GetSection(EmailTemplatesOptions.EmailTemplatesSection));
+        }
+        private static void RegisterServices(this IServiceCollection services)
+        {
             services.AddTransient<IEmailService, EmailService>();
-
-            services.ConfigureHosts();
+            services.AddTransient<ITopicService, TopicService>();
+            services.RegisterAllTypes<ITopicHandler>(new []{ typeof(Startup).Assembly });
         }
-
-        private static void ConfigureOptions(this IServiceCollection services, IConfiguration configuration)
+        private static void RegisterHosts(this IServiceCollection services)
         {
-            services.Configure<EmailOptions>(configuration.GetSection(EmailOptions.EmailOptionsSection));
+            services.AddHostedService<MessageCenterBgService>();
         }
 
-        private static void ConfigureHosts(this IServiceCollection services)
-        {
-            services.AddHostedService<EmailHost>();
-        }
-
-        private static void ConfigureRabbitMq(this IServiceCollection services, IConfiguration configuration)
+        private static void AddRabbitMq(this IServiceCollection services, IConfiguration configuration)
         {
             services.AddMessageBus(options =>
             {
                 options.Uri = new Uri(configuration.GetSection("RabbitMQ")["Uri"]);
             }, busFactory => busFactory.ConfigureTopology());
         }
-
         private static void ConfigureTopology(this IMessageBusFactory busFactory)
         {
-            // Configure email, sms and viber topic
-            busFactory.DeclareExchange("email.sms.viber", ExchangeType.Topic);
-            busFactory.DeclareQueue("email");
-            busFactory.DeclareQueue("sms");
-            busFactory.DeclareQueue("newsletter");
-            busFactory.BindQueue("email", "email.sms.viber", "email.*.*");
-            busFactory.BindQueue("sms", "email.sms.viber", "*.sms.*");
-            busFactory.BindQueue("viber", "email.sms.viber", "*.*.viber");
+            // Infrastructure
+            busFactory.DeclareExchange("monitoring", ExchangeType.Topic);
+
+            busFactory.DeclareExchange("identity-server", ExchangeType.Topic);
+            busFactory.DeclareExchange("account", ExchangeType.Topic);
+
+            busFactory.DeclareQueue("message-center");
+
+
+            // Bindings
+            busFactory.BindExchange("identity-server", "monitoring", "identity-server.#");
+            busFactory.BindExchange("account", "monitoring", "account.#");
+
+            busFactory.BindQueue("message-center", "identity-server", "#");
+            busFactory.BindQueue("message-center", "account", "#");
+        }
+
+        private static void RegisterAllTypes<T>(this IServiceCollection services, IEnumerable<Assembly> assemblies,
+            ServiceLifetime lifetime = ServiceLifetime.Transient)
+        {
+            var typesFromAssemblies = assemblies.SelectMany(a => a.DefinedTypes.Where(x => x.GetInterfaces().Contains(typeof(T))));
+            foreach (var type in typesFromAssemblies)
+            {
+                if (type.IsAbstract) continue;
+                services.Add(new ServiceDescriptor(typeof(T), type, lifetime));
+            }
         }
     }
 }
