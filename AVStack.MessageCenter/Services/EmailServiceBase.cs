@@ -4,11 +4,12 @@ using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using AVStack.IdentityServer.Common.Models;
+using AVStack.MessageBus.Abstraction;
 using AVStack.MessageCenter.Common.Configuration;
 using AVStack.MessageCenter.Models;
 using AVStack.MessageCenter.Models.Interfaces;
 using AVStack.MessageCenter.Services.Interfaces;
+using MailKit;
 using MailKit.Net.Smtp;
 using Microsoft.Extensions.Options;
 using MimeKit;
@@ -16,7 +17,7 @@ using MimeKit.Text;
 
 namespace AVStack.MessageCenter.Services
 {
-    public abstract class EmailServiceBase : IEmailService
+    public abstract class EmailServiceBase
     {
         private readonly EmailConfigurationOptions _emailOptions;
         private readonly EmailTemplatesOptions _templateOptions;
@@ -28,7 +29,7 @@ namespace AVStack.MessageCenter.Services
             _templateOptions = templateOptions.Value;
         }
 
-        public virtual async Task AppendDataToHtmlTemplate(string templateType, MimeMessage email, params object[] templateData)
+        public virtual async Task AppendDataToHtmlTemplate(MimeMessage email, string templateType, params object[] templateData)
         {
             var htmlTemplate = await GetHtmlTemplateAsync(templateType);
             email.Body = new TextPart(TextFormat.Html)
@@ -38,11 +39,11 @@ namespace AVStack.MessageCenter.Services
         }
 
         [SuppressMessage("ReSharper", "UseObjectOrCollectionInitializer")]
-        public MimeMessage CreateEmail(IEmailModel emailModel)
+        public MimeMessage CreateEmail(IEmailModel emailModel, string subject)
         {
             var mimeMessage = new MimeMessage();
 
-            mimeMessage.Subject = emailModel.Subject;
+            mimeMessage.Subject = subject;
             mimeMessage.To.AddRange(emailModel.To);
 
             // TODO: Implement logic to assign different emails for sending
@@ -57,15 +58,6 @@ namespace AVStack.MessageCenter.Services
             return SendEmailAsync(email);
         }
 
-        // private Task<string> GetHtmlTemplateAsync(string templateType)
-        // {
-        //     return templateType switch
-        //     {
-        //         nameof(UserRegistration) => LoadHtmlTemplateFromFileAsync(_templateOptions.BasePath + _templateOptions.EmailConfirmation),
-        //         _ => Task.FromResult(string.Empty)
-        //     };
-        // }
-
         private async Task<string> GetHtmlTemplateAsync(string templateName)
         {
             var templatePath = _templateOptions.BasePath + $"{templateName}Template.html";
@@ -76,9 +68,18 @@ namespace AVStack.MessageCenter.Services
             }
         }
 
+        // private Task<string> GetHtmlTemplateAsync(string templateType)
+        // {
+        //     return templateType switch
+        //     {
+        //         nameof(UserRegistration) => LoadHtmlTemplateFromFileAsync(_templateOptions.BasePath + _templateOptions.EmailConfirmation),
+        //         _ => Task.FromResult(string.Empty)
+        //     };
+        // }
+
         private async Task SendEmailAsync(MimeMessage message)
         {
-            using (var smtpClient = new SmtpClient())
+            using (var smtpClient = new SmtpClient(new ProtocolLogger ("smtp.log")))
             {
                 // TODO: Add authentication for email server
                 try
