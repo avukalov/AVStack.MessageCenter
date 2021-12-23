@@ -19,7 +19,7 @@ namespace AVStack.MessageCenter.Extensions
     {
         public static void ConfigureServices(this IServiceCollection services, IConfiguration configuration)
         {
-            //services.AddControllers();
+            services.AddControllers();
             //services.AddAuthorization();
 
             services.AddRabbitMq(configuration);

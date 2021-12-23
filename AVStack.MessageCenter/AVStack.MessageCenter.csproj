@@ -17,7 +17,6 @@
     <ItemGroup>
       <ProjectReference Include="..\..\AVStack.IdentityServer\AVStack.IdentityServer.Common\AVStack.IdentityServer.Common.csproj" />
       <ProjectReference Include="..\..\AVStack.MessageBus\AVStack.MessageBus.Extensions\AVStack.MessageBus.Extensions.csproj" />
-      <ProjectReference Include="..\AVStack.MessageCenter.Common\AVStack.MessageCenter.Common.csproj" />
     </ItemGroup>
 
 </Project>
