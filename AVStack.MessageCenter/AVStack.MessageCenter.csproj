@@ -11,11 +11,11 @@
     <ItemGroup>
       <PackageReference Include="AutoMapper" Version="10.1.1" />
       <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="8.1.1" />
+      <PackageReference Include="AVStack.IdentityServer.Common" Version="1.0.0" />
       <PackageReference Include="MailKit" Version="2.15.0" />
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\..\AVStack.IdentityServer\AVStack.IdentityServer.Common\AVStack.IdentityServer.Common.csproj" />
       <ProjectReference Include="..\..\AVStack.MessageBus\AVStack.MessageBus.Extensions\AVStack.MessageBus.Extensions.csproj" />
     </ItemGroup>
 
