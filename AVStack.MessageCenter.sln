@@ -2,8 +2,6 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AVStack.MessageCenter", "AVStack.MessageCenter\AVStack.MessageCenter.csproj", "{60DF8528-387F-4672-A7B5-7697B420E6B3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AVStack.IdentityServer.Common", "..\AVStack.IdentityServer\AVStack.IdentityServer.Common\AVStack.IdentityServer.Common.csproj", "{FA67E0DB-BF31-4CBB-B639-770740BA11B5}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
