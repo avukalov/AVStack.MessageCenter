@@ -5,10 +5,13 @@ using System.Reflection;
 using AVStack.MessageBus.Abstraction;
 using AVStack.MessageBus.Extensions;
 using AVStack.MessageCenter.Common.Configuration;
+using AVStack.MessageCenter.Data;
 using AVStack.MessageCenter.Handlers;
 using AVStack.MessageCenter.Hosts;
 using AVStack.MessageCenter.Services;
 using AVStack.MessageCenter.Services.Interfaces;
+using FluentValidation.AspNetCore;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using RabbitMQ.Client;
@@ -19,13 +22,19 @@ namespace AVStack.MessageCenter.Extensions
     {
         public static void ConfigureServices(this IServiceCollection services, IConfiguration configuration)
         {
-            services.AddControllers();
+            services.AddControllers()
+                .AddFluentValidation(fv =>
+                {
+                    fv.DisableDataAnnotationsValidation = true;
+                    fv.RegisterValidatorsFromAssembly(typeof(Startup).GetTypeInfo().Assembly);
+                });
             //services.AddAuthorization();
 
             services.AddRabbitMq(configuration);
             services.AddAutoMapper(typeof(Startup));
 
             services.RegisterOptions(configuration);
+            services.RegisterDbContext(configuration);
             services.RegisterServices();
             services.RegisterHosts();
         }
@@ -52,6 +61,18 @@ namespace AVStack.MessageCenter.Extensions
             {
                 options.Uri = new Uri(configuration.GetSection("RabbitMQ")["Uri"]);
             }, busFactory => busFactory.ConfigureTopology());
+        }
+
+        private static void RegisterDbContext(this IServiceCollection services, IConfiguration configuration)
+        {
+            services.AddDbContext<McDbContext>(options =>
+            {
+                options.UseNpgsql(configuration.GetConnectionString("AVMessageCenter"), npgsqlOptions =>
+                {
+                    npgsqlOptions.MigrationsAssembly(typeof(McDbContext).GetTypeInfo().Assembly.GetName().Name);
+                    npgsqlOptions.UseQuerySplittingBehavior(QuerySplittingBehavior.SingleQuery);
+                });
+            });
         }
         private static void ConfigureTopology(this IMessageBusFactory busFactory)
         {
