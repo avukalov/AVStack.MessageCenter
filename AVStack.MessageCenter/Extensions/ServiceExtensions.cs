@@ -9,6 +9,8 @@ using AVStack.MessageCenter.Handlers;
 using AVStack.MessageCenter.Hosts;
 using AVStack.MessageCenter.Services;
 using AVStack.MessageCenter.Services.Interfaces;
+using GraphQL.Client.Http;
+using GraphQL.Client.Serializer.SystemTextJson;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using RabbitMQ.Client;
@@ -23,6 +25,8 @@ namespace AVStack.MessageCenter.Extensions
             //services.AddAuthorization();
 
             services.AddRabbitMq(configuration);
+            services.AddHasura(configuration);
+
             services.AddAutoMapper(typeof(Startup));
 
             services.RegisterOptions(configuration);
@@ -52,6 +56,14 @@ namespace AVStack.MessageCenter.Extensions
             {
                 options.Uri = new Uri(configuration.GetSection("RabbitMQ")["Uri"]);
             }, busFactory => busFactory.ConfigureTopology());
+        }
+
+        private static void AddHasura(this IServiceCollection services, IConfiguration configuration)
+        {
+            services.AddScoped(x => new GraphQLHttpClient(new GraphQLHttpClientOptions
+            {
+                EndPoint = new Uri(configuration.GetConnectionString("Hasura")),
+            }, new SystemTextJsonSerializer()));
         }
         private static void ConfigureTopology(this IMessageBusFactory busFactory)
         {

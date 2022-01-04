@@ -14,7 +14,10 @@
       <PackageReference Include="AVStack.IdentityServer.Common" Version="1.0.0" />
       <PackageReference Include="AVStack.MessageBus.Abstraction" Version="1.1.0" />
       <PackageReference Include="AVStack.MessageBus.Extensions" Version="1.1.0" />
-      <PackageReference Include="MailKit" Version="2.15.0" />
+      <PackageReference Include="GraphQL.Client" Version="4.0.2" />
+      <PackageReference Include="GraphQL.Client.Serializer.SystemTextJson" Version="4.0.2" />
+      <PackageReference Include="GraphQL.MicrosoftDI" Version="4.7.1" />
+      <PackageReference Include="MailKit" Version="3.0.0" />
     </ItemGroup>
 
 </Project>

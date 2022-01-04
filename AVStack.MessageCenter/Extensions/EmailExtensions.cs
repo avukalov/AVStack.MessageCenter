@@ -5,7 +5,7 @@ using MimeKit;
 
 namespace AVStack.MessageCenter.Extensions
 {
-    public static class Helpers
+    public static class EmailExtensions
     {
         public static void Format(this IEmailModel emailModel)
         {
